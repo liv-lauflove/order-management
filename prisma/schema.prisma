@@ -1,0 +1,308 @@
+// ==========================================================
+// Furniture Order & Production Management System - DC Habitat
+// Prisma Schema (PostgreSQL / Supabase)
+// ==========================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------
+// ENUMS
+// ---------------------------------------------------------
+
+enum OrderStatus {
+  WAITING_SUPPLIER
+  WAITING_FABRIC
+  IN_PRODUCTION
+  READY_TO_SHIP
+  DELIVERED
+  COMPLETED
+}
+
+enum SupplierOrderStatus {
+  WAITING
+  ORDERED
+  IN_PRODUCTION
+  READY
+  SHIPPED
+  ARRIVED
+}
+
+enum SupplierPaymentStatus {
+  UNPAID
+  PAID
+}
+
+enum FabricStatus {
+  NOT_ORDERED
+  ORDERED
+  ARRIVED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+enum PaymentType {
+  CUSTOMER
+  SUPPLIER
+}
+
+enum ActivityType {
+  INVOICE_CREATED
+  INVOICE_UPDATED
+  SUPPLIER_ADDED
+  SUPPLIER_PAID
+  SUPPLIER_COMPLETED
+  FABRIC_ADDED
+  FABRIC_ARRIVED
+  ORDER_CREATED
+  ORDER_STATUS_CHANGED
+  PAYMENT_RECEIVED
+}
+
+// ---------------------------------------------------------
+// AUTH / ADMIN
+// ---------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  passwordHash  String?  // null jika login via Google OAuth
+  provider      String   @default("credentials") // "credentials" | "google"
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------
+// CUSTOMER
+// ---------------------------------------------------------
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders    Order[]
+  invoices  Invoice[]
+
+  @@map("customers")
+}
+
+// ---------------------------------------------------------
+// ORDER
+// ---------------------------------------------------------
+
+model Order {
+  id           String      @id @default(cuid())
+  orderNumber  String      @unique // e.g. ORD-0001
+  customerId   String
+  projectName  String
+  orderDate    DateTime    @default(now())
+  deadline     DateTime?
+  status       OrderStatus @default(WAITING_SUPPLIER)
+  notes        String?
+  shippingDate DateTime?   // diisi saat status supplier = ARRIVED
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  customer       Customer        @relation(fields: [customerId], references: [id])
+  items          OrderItem[]
+  supplierOrders SupplierOrder[]
+  fabrics        Fabric[]
+  invoices       Invoice[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String  @id @default(cuid())
+  orderId       String
+  furnitureName String
+  qty           Int     @default(1)
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+// ---------------------------------------------------------
+// SUPPLIER
+// ---------------------------------------------------------
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  supplierOrders SupplierOrder[]
+  fabrics        Fabric[]
+
+  @@map("suppliers")
+}
+
+model SupplierOrder {
+  id               String                 @id @default(cuid())
+  orderId          String
+  supplierId       String
+  product          String
+  supplierPrice    Decimal                @db.Decimal(14, 2)
+  deadline         DateTime?
+  status           SupplierOrderStatus    @default(WAITING)
+  paymentStatus    SupplierPaymentStatus  @default(UNPAID)
+  supplierInvoice  String?                // no invoice dari supplier / file url
+  photoUrl         String?
+  notes            String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  order    Order     @relation(fields: [orderId], references: [id])
+  supplier Supplier  @relation(fields: [supplierId], references: [id])
+  payments Payment[]
+
+  @@map("supplier_orders")
+}
+
+// ---------------------------------------------------------
+// FABRIC MANAGEMENT
+// ---------------------------------------------------------
+
+model Fabric {
+  id            String       @id @default(cuid())
+  orderId       String
+  itemImageUrl  String?      // gambar item furniture yang pakai fabric ini
+  brand         String?
+  fabricPhotoUrl String?
+  colorCode     String?
+  supplierId    String?
+  metersNeeded  Decimal      @db.Decimal(10, 2)
+  price         Decimal      @db.Decimal(14, 2)
+  status        FabricStatus @default(NOT_ORDERED)
+  orderDate     DateTime?
+  arrivalDate   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  order    Order     @relation(fields: [orderId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+
+  @@map("fabrics")
+}
+
+// ---------------------------------------------------------
+// INVOICE
+// ---------------------------------------------------------
+
+model Invoice {
+  id                String        @id @default(cuid())
+  invoiceNumber     String        @unique // pakai prefix dari Settings
+  customerId        String
+  orderId           String?
+  logoUrl           String?
+  status            InvoiceStatus @default(DRAFT)
+  subtotal          Decimal       @db.Decimal(14, 2) @default(0)
+  tax               Decimal       @db.Decimal(14, 2) @default(0)
+  discount          Decimal       @db.Decimal(14, 2) @default(0)
+  total             Decimal       @db.Decimal(14, 2) @default(0)
+  dp                Decimal       @db.Decimal(14, 2) @default(0)
+  remainingBalance  Decimal       @db.Decimal(14, 2) @default(0)
+  notes             String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  customer Customer      @relation(fields: [customerId], references: [id])
+  order    Order?        @relation(fields: [orderId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id           String  @id @default(cuid())
+  invoiceId    String
+  productImage String?
+  description  String
+  qty          Int     @default(1)
+  price        Decimal @db.Decimal(14, 2)
+  total        Decimal @db.Decimal(14, 2)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_items")
+}
+
+// ---------------------------------------------------------
+// FINANCE
+// ---------------------------------------------------------
+
+model Payment {
+  id              String      @id @default(cuid())
+  type            PaymentType // CUSTOMER | SUPPLIER
+  invoiceId       String?     // diisi jika type = CUSTOMER
+  supplierOrderId String?     // diisi jika type = SUPPLIER
+  amount          Decimal     @db.Decimal(14, 2)
+  paymentDate     DateTime    @default(now())
+  method          String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
+  supplierOrder SupplierOrder? @relation(fields: [supplierOrderId], references: [id])
+
+  @@map("payments")
+}
+
+// ---------------------------------------------------------
+// ACTIVITY LOG (Recent Activity di Dashboard)
+// ---------------------------------------------------------
+
+model ActivityLog {
+  id          String       @id @default(cuid())
+  type        ActivityType
+  description String
+  refId       String?      // id entitas terkait (order/invoice/supplier/fabric)
+  createdAt   DateTime     @default(now())
+
+  @@map("activity_logs")
+}
+
+// ---------------------------------------------------------
+// SETTINGS (single row config)
+// ---------------------------------------------------------
+
+model Settings {
+  id             String   @id @default(cuid())
+  companyName    String
+  companyLogoUrl String?
+  address        String?
+  whatsappNumber String?
+  bankAccount    String?
+  invoicePrefix  String   @default("INV")
+  updatedAt      DateTime @updatedAt
+
+  @@map("settings")
+}
