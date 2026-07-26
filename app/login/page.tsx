@@ -2,11 +2,13 @@ import { login } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string }
+  searchParams: Promise<{ error?: string }>
 }) {
+  const resolvedSearchParams = await searchParams
+
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
       <div className="w-full max-w-sm rounded-xl bg-card p-8 shadow-sm border border-border">
@@ -25,13 +27,13 @@ export default function LoginPage({
             <Input id="password" name="password" type="password" required />
           </div>
           
-          {searchParams?.error && (
+          {resolvedSearchParams?.error && (
             <div className="text-sm text-destructive text-center">
-              {searchParams.error}
+              {resolvedSearchParams.error}
             </div>
           )}
 
-          <Button formAction={login} className="w-full">
+          <Button type="submit" formAction={login} className="w-full">
             Sign In
           </Button>
         </form>
