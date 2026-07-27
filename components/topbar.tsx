@@ -14,21 +14,16 @@ export function Topbar() {
     : "Dashboard"
 
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b border-border bg-card px-6 transition-[width,height] ease-linear">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          <span className="text-foreground">{currentPage}</span>
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6 transition-[width,height] ease-linear">
+      <div className="flex items-center gap-4">
+        <SidebarTrigger className="-ml-2 h-9 w-9 text-muted-foreground hover:text-foreground" />
+        <Separator orientation="vertical" className="h-6 w-[1.5px] bg-border" />
+        <div className="flex items-center text-lg font-semibold tracking-tight text-foreground ml-1">
+          {currentPage}
         </div>
       </div>
+
       
-      <div className="ml-auto flex items-center gap-4">
-        {/* Placeholder for User Profile / Avatar */}
-        <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-xs border border-primary/30">
-          U
-        </div>
-      </div>
     </header>
   )
 }
