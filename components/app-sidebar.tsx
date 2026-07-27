@@ -56,29 +56,35 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 mt-4">
-        <SidebarMenu>
+      <SidebarContent className="px-3 mt-6">
+        <SidebarMenu className="gap-2">
           {navItems.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton 
                 render={<Link href={item.url} />}
                 tooltip={item.title}
                 isActive={pathname.startsWith(item.url)}
+                className="text-base h-11 [&>svg]:size-5 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center"
               >
                 <item.icon />
-                <span>{item.title}</span>
+                <span className="font-medium group-data-[collapsible=icon]:hidden">{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="px-3 mb-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton render={<Link href="/settings" />} tooltip="Settings" isActive={pathname.startsWith('/settings')}>
+            <SidebarMenuButton 
+              render={<Link href="/settings" />} 
+              tooltip="Settings" 
+              isActive={pathname.startsWith('/settings')}
+              className="text-base h-11 [&>svg]:size-5 group-data-[collapsible=icon]:h-9 group-data-[collapsible=icon]:w-9 group-data-[collapsible=icon]:justify-center"
+            >
               <Settings />
-              <span>Settings</span>
+              <span className="font-medium group-data-[collapsible=icon]:hidden">Settings</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
