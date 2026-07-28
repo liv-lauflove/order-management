@@ -130,7 +130,8 @@ export function OrderForm({
               <Input 
                 id="orderNumber" 
                 value={orderNumber} 
-                onChange={e => setOrderNumber(e.target.value)} 
+                readOnly
+                className="bg-muted/50 cursor-not-allowed"
                 required 
                 placeholder="e.g. ORD-0001"
               />
