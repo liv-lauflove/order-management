@@ -35,7 +35,13 @@ export async function getOrder(id: string) {
     where: { id },
     include: {
       customer: true,
-      items: true
+      items: {
+        include: {
+          supplierOrders: {
+            include: { supplier: true }
+          }
+        }
+      }
     }
   })
 }
@@ -117,5 +123,15 @@ export async function updateOrder(id: string, data: CreateOrderInput) {
 export async function deleteOrder(id: string) {
   await prisma.order.delete({ where: { id } })
   revalidatePath('/orders')
+  revalidatePath('/dashboard')
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus) {
+  await prisma.order.update({
+    where: { id },
+    data: { status }
+  })
+  revalidatePath('/orders')
+  revalidatePath(`/orders/${id}`)
   revalidatePath('/dashboard')
 }

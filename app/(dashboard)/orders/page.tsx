@@ -2,6 +2,7 @@ import { ClickableTableRow } from './clickable-row'
 import { getOrders } from './actions'
 import { DeleteButton } from './delete-button'
 import { StatusFilter } from './status-filter'
+import { OrderStatusUpdater } from './status-updater'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusCircle, Edit, Eye } from 'lucide-react'
@@ -67,9 +68,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     <TableCell>{order.projectName}</TableCell>
                     <TableCell>{format(new Date(order.orderDate), 'MMM dd, yyyy')}</TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-secondary text-secondary-foreground">
-                        {order.status.replace(/_/g, ' ')}
-                      </span>
+                      <OrderStatusUpdater id={order.id} currentStatus={order.status} />
                     </TableCell>
                     <TableCell className="max-w-[200px] truncate" title={order.items.map((i: any) => i.furnitureName).join(', ')}>
                       {order.items.length > 0 ? order.items.map((i: any) => i.furnitureName).join(', ') : '-'}
