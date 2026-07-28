@@ -9,7 +9,7 @@ export default async function CreateOrderPage() {
 
   return (
     <div className="w-full h-full">
-      <OrderForm customers={customers} initialData={{ orderNumber: nextOrderNumber }} />
+      <OrderForm customers={customers} nextOrderNumber={nextOrderNumber} />
     </div>
   )
 }

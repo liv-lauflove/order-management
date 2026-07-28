@@ -21,15 +21,17 @@ import { cn } from "@/lib/utils"
 
 export function OrderForm({ 
   initialData, 
-  customers 
+  customers,
+  nextOrderNumber
 }: { 
   initialData?: any, 
-  customers: { id: string, name: string }[] 
+  customers: { id: string, name: string }[],
+  nextOrderNumber?: string
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   
-  const [orderNumber, setOrderNumber] = useState(initialData?.orderNumber || '')
+  const [orderNumber, setOrderNumber] = useState(initialData?.orderNumber || nextOrderNumber || '')
   const [customerId, setCustomerId] = useState(initialData?.customerId || '')
   const [projectName, setProjectName] = useState(initialData?.projectName || '')
   const [orderDate, setOrderDate] = useState<Date>(initialData?.orderDate ? new Date(initialData.orderDate) : new Date())
@@ -88,7 +90,7 @@ export function OrderForm({
     }
 
     try {
-      if (initialData) {
+      if (initialData && initialData.id) {
         await updateOrder(initialData.id, payload)
         toast.success('Order updated successfully')
       } else {
@@ -113,7 +115,7 @@ export function OrderForm({
             </Button>
           </Link>
           <h2 className="text-2xl font-bold tracking-tight text-heading">
-            {initialData ? 'Edit Order' : 'New Order'}
+            {initialData && initialData.id ? 'Edit Order' : 'New Order'}
           </h2>
         </div>
       </div>
