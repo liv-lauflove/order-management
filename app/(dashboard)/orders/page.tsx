@@ -1,9 +1,10 @@
+import { ClickableTableRow } from './clickable-row'
 import { getOrders } from './actions'
 import { DeleteButton } from './delete-button'
 import { StatusFilter } from './status-filter'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { PlusCircle, Edit } from 'lucide-react'
+import { PlusCircle, Edit, Eye } from 'lucide-react'
 import { 
   Table, 
   TableBody, 
@@ -60,7 +61,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                 </TableRow>
               ) : (
                 orders.map((order) => (
-                  <TableRow key={order.id}>
+                  <ClickableTableRow key={order.id} href={`/orders/${order.id}`}>
                     <TableCell className="font-medium text-foreground">{order.orderNumber}</TableCell>
                     <TableCell>{order.customer.name}</TableCell>
                     <TableCell>{order.projectName}</TableCell>
@@ -75,7 +76,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Link href={`/orders/${order.id}`}>
+                        <Link href={`/orders/${order.id}/edit`}>
                           <Button variant="outline" size="icon" className="h-8 w-8" title="Edit Order">
                             <Edit className="h-4 w-4" />
                           </Button>
@@ -83,7 +84,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                         <DeleteButton id={order.id} />
                       </div>
                     </TableCell>
-                  </TableRow>
+                  </ClickableTableRow>
                 ))
               )}
             </TableBody>
