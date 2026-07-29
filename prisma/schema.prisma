@@ -126,7 +126,6 @@ model Order {
 
   customer       Customer        @relation(fields: [customerId], references: [id])
   items          OrderItem[]
-  fabrics        Fabric[]
   invoices       Invoice[]
 
   @@map("orders")
@@ -142,6 +141,7 @@ model OrderItem {
 
   order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
   supplierOrders SupplierOrder[]
+  fabrics        Fabric[]
 
   @@map("order_items")
 }
@@ -191,7 +191,7 @@ model SupplierOrder {
 
 model Fabric {
   id            String       @id @default(cuid())
-  orderId       String
+  orderItemId   String
   itemImageUrl  String?      // gambar item furniture yang pakai fabric ini
   brand         String?
   fabricPhotoUrl String?
@@ -205,8 +205,8 @@ model Fabric {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  order    Order     @relation(fields: [orderId], references: [id])
-  supplier Supplier? @relation(fields: [supplierId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  supplier  Supplier? @relation(fields: [supplierId], references: [id])
 
   @@map("fabrics")
 }

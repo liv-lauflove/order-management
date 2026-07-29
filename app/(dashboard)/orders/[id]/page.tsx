@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Edit, Plus } from 'lucide-react'
 import { format } from 'date-fns'
 import { AssignSupplierDialog } from './assign-supplier-dialog'
+import { AssignFabricDialog } from './assign-fabric-dialog'
 import { OrderStatusUpdater } from '../status-updater'
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -111,7 +112,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         {item.supplierOrders.map((so: any) => (
                           <div key={so.id} className="bg-muted/30 border border-border rounded-md p-2 text-xs flex justify-between items-center">
                             <div>
-                              <span className="font-medium">{so.supplier.name}</span>
+                              <span className="font-medium text-blue-700 dark:text-blue-400">Supplier: {so.supplier.name}</span>
                               <span className="mx-2 text-muted-foreground">•</span>
                               <span className={`inline-flex items-center rounded-full border px-2 py-0.5 font-semibold bg-secondary text-secondary-foreground`}>
                                 {so.status.replace(/_/g, ' ')}
@@ -122,11 +123,33 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         ))}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-xs italic">No supplier assigned yet.</span>
+                      <span className="text-muted-foreground text-xs italic block mb-2">No supplier assigned yet.</span>
+                    )}
+
+                    {item.fabrics && item.fabrics.length > 0 && (
+                      <div className="flex flex-col gap-2 mt-2">
+                        {item.fabrics.map((fab: any) => (
+                          <div key={fab.id} className="bg-muted/30 border border-border rounded-md p-2 text-xs flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              {fab.fabricPhotoUrl && (
+                                <img src={fab.fabricPhotoUrl} alt="Fabric" className="w-8 h-8 object-cover rounded-sm border" />
+                              )}
+                              <div>
+                                <span className="font-medium text-pink-700 dark:text-pink-400">Fabric: {fab.brand}</span>
+                                <p className="text-muted-foreground mt-0.5">{fab.colorCode} • {Number(fab.metersNeeded)}m</p>
+                              </div>
+                            </div>
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 font-semibold bg-secondary text-secondary-foreground`}>
+                              {fab.status.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </td>
-                  <td className="p-4 text-right">
+                  <td className="p-4 text-right flex flex-col gap-2 items-end">
                     <AssignSupplierDialog orderId={order.id} orderItemId={item.id} furnitureName={item.furnitureName} suppliers={suppliers} />
+                    <AssignFabricDialog orderId={order.id} orderItemId={item.id} furnitureName={item.furnitureName} suppliers={suppliers} />
                   </td>
                 </tr>
               ))}
