@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { PaymentType } from '@prisma/client'
 import { createPayment, CreatePaymentInput } from './actions'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -99,11 +99,9 @@ export function PaymentForm({ invoices, supplierOrders }: PaymentFormProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Record Payment
-        </Button>
+      <DialogTrigger className={buttonVariants({ variant: 'default' })}>
+        <Plus className="mr-2 h-4 w-4" />
+        Record Payment
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -115,7 +113,8 @@ export function PaymentForm({ invoices, supplierOrders }: PaymentFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
             <Label>Payment Type</Label>
-            <Select value={type} onValueChange={(v: PaymentType) => {
+            <Select value={type} onValueChange={(v: any) => {
+              if (!v) return;
               setType(v)
               setInvoiceId('')
               setSupplierOrderId('')
@@ -133,7 +132,7 @@ export function PaymentForm({ invoices, supplierOrders }: PaymentFormProps) {
           {type === 'CUSTOMER' ? (
             <div className="space-y-2">
               <Label>Select Invoice</Label>
-              <Select value={invoiceId} onValueChange={setInvoiceId}>
+              <Select value={invoiceId} onValueChange={(v) => v && setInvoiceId(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an unpaid invoice" />
                 </SelectTrigger>
@@ -153,7 +152,7 @@ export function PaymentForm({ invoices, supplierOrders }: PaymentFormProps) {
           ) : (
             <div className="space-y-2">
               <Label>Select Supplier Order</Label>
-              <Select value={supplierOrderId} onValueChange={setSupplierOrderId}>
+              <Select value={supplierOrderId} onValueChange={(v) => v && setSupplierOrderId(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select an unpaid supplier order" />
                 </SelectTrigger>
@@ -206,7 +205,7 @@ export function PaymentForm({ invoices, supplierOrders }: PaymentFormProps) {
 
           <div className="space-y-2">
             <Label>Method</Label>
-            <Select value={method} onValueChange={setMethod}>
+            <Select value={method} onValueChange={(v) => v && setMethod(v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select method" />
               </SelectTrigger>
