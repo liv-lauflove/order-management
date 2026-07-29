@@ -46,12 +46,14 @@ export default async function InvoiceDetailPage({
             <StatusUpdater id={invoice.id} currentStatus={invoice.status} />
           </div>
           
-          <Link href={`/invoices/${invoice.id}/edit`}>
-            <Button variant="outline">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Invoice
-            </Button>
-          </Link>
+          {invoice.status === 'DRAFT' && (
+            <Link href={`/invoices/${invoice.id}/edit`}>
+              <Button variant="outline">
+                <Edit className="mr-2 h-4 w-4" />
+                Edit Invoice
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
