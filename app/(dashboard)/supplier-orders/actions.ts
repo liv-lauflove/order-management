@@ -22,9 +22,21 @@ export async function getGlobalSupplierOrders(statusFilter?: string) {
 }
 
 export async function updateSupplierOrderStatus(id: string, newStatus: SupplierOrderStatus) {
-  await prisma.supplierOrder.update({
+  const so = await prisma.supplierOrder.update({
     where: { id },
-    data: { status: newStatus }
+    data: { status: newStatus },
+    include: { orderItem: true }
   })
+  
+  if (newStatus === 'ARRIVED') {
+    await prisma.order.update({
+      where: { id: so.orderItem.orderId },
+      data: { status: 'READY_TO_SHIP' }
+    })
+    revalidatePath(`/orders/${so.orderItem.orderId}`)
+    revalidatePath('/orders')
+    revalidatePath('/dashboard')
+  }
+  
   revalidatePath('/supplier-orders')
 }
