@@ -14,9 +14,11 @@ export default async function EditOrderPage({ params }: { params: Promise<{ id: 
     notFound()
   }
 
+  const safeOrder = JSON.parse(JSON.stringify(order))
+
   return (
     <div className="w-full h-full">
-      <OrderForm initialData={order} customers={customers} />
+      <OrderForm initialData={safeOrder} customers={customers} />
     </div>
   )
 }

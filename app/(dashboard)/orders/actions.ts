@@ -35,7 +35,16 @@ export async function getOrder(id: string) {
     where: { id },
     include: {
       customer: true,
-      items: true
+      items: {
+        include: {
+          supplierOrders: {
+            include: { supplier: true }
+          },
+          fabrics: {
+            include: { supplier: true }
+          }
+        }
+      }
     }
   })
 }
@@ -58,6 +67,7 @@ export type CreateOrderInput = {
   status?: OrderStatus
   notes?: string
   items: {
+    id?: string
     furnitureName: string
     qty: number
     notes?: string
@@ -89,10 +99,18 @@ export async function createOrder(data: CreateOrderInput) {
 export async function updateOrder(id: string, data: CreateOrderInput) {
   const { orderNumber, customerId, projectName, orderDate, deadline, status, notes, items } = data
   
-  // Use transaction to recreate items and update order
-  await prisma.$transaction([
-    prisma.orderItem.deleteMany({ where: { orderId: id } }),
-    prisma.order.update({
+  const existingItems = await prisma.orderItem.findMany({ where: { orderId: id } })
+  
+  const itemsToCreate = items.filter(i => !i.id)
+  const itemsToUpdate = items.filter(i => i.id)
+  
+  // Find items to delete (exist in DB but not in payload)
+  const payloadIds = itemsToUpdate.map(i => i.id)
+  const itemsToDelete = existingItems.filter(i => !payloadIds.includes(i.id))
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Update Order
+    await tx.order.update({
       where: { id },
       data: {
         orderNumber,
@@ -102,12 +120,40 @@ export async function updateOrder(id: string, data: CreateOrderInput) {
         deadline,
         status,
         notes,
-        items: {
-          create: items
-        }
       }
     })
-  ])
+
+    // 2. Delete removed items
+    if (itemsToDelete.length > 0) {
+      await tx.orderItem.deleteMany({
+        where: { id: { in: itemsToDelete.map(i => i.id) } }
+      })
+    }
+
+    // 3. Update existing items
+    for (const item of itemsToUpdate) {
+      await tx.orderItem.update({
+        where: { id: item.id },
+        data: {
+          furnitureName: item.furnitureName,
+          qty: item.qty,
+          notes: item.notes,
+        }
+      })
+    }
+
+    // 4. Create new items
+    if (itemsToCreate.length > 0) {
+      await tx.orderItem.createMany({
+        data: itemsToCreate.map(item => ({
+          orderId: id,
+          furnitureName: item.furnitureName,
+          qty: item.qty,
+          notes: item.notes,
+        }))
+      })
+    }
+  })
   
   revalidatePath('/orders')
   revalidatePath(`/orders/${id}`)
@@ -117,5 +163,15 @@ export async function updateOrder(id: string, data: CreateOrderInput) {
 export async function deleteOrder(id: string) {
   await prisma.order.delete({ where: { id } })
   revalidatePath('/orders')
+  revalidatePath('/dashboard')
+}
+
+export async function updateOrderStatus(id: string, status: OrderStatus) {
+  await prisma.order.update({
+    where: { id },
+    data: { status }
+  })
+  revalidatePath('/orders')
+  revalidatePath(`/orders/${id}`)
   revalidatePath('/dashboard')
 }

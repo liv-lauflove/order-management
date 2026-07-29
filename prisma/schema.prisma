@@ -126,8 +126,6 @@ model Order {
 
   customer       Customer        @relation(fields: [customerId], references: [id])
   items          OrderItem[]
-  supplierOrders SupplierOrder[]
-  fabrics        Fabric[]
   invoices       Invoice[]
 
   @@map("orders")
@@ -141,7 +139,9 @@ model OrderItem {
   notes         String?
   createdAt     DateTime @default(now())
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order          Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  supplierOrders SupplierOrder[]
+  fabrics        Fabric[]
 
   @@map("order_items")
 }
@@ -166,10 +166,9 @@ model Supplier {
 
 model SupplierOrder {
   id               String                 @id @default(cuid())
-  orderId          String
+  orderItemId      String
   supplierId       String
-  product          String
-  supplierPrice    Decimal                @db.Decimal(14, 2)
+  supplierPrice    Decimal?               @db.Decimal(14, 2)
   deadline         DateTime?
   status           SupplierOrderStatus    @default(WAITING)
   paymentStatus    SupplierPaymentStatus  @default(UNPAID)
@@ -179,9 +178,9 @@ model SupplierOrder {
   createdAt        DateTime               @default(now())
   updatedAt        DateTime               @updatedAt
 
-  order    Order     @relation(fields: [orderId], references: [id])
-  supplier Supplier  @relation(fields: [supplierId], references: [id])
-  payments Payment[]
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  supplier  Supplier  @relation(fields: [supplierId], references: [id])
+  payments  Payment[]
 
   @@map("supplier_orders")
 }
@@ -192,7 +191,7 @@ model SupplierOrder {
 
 model Fabric {
   id            String       @id @default(cuid())
-  orderId       String
+  orderItemId   String
   itemImageUrl  String?      // gambar item furniture yang pakai fabric ini
   brand         String?
   fabricPhotoUrl String?
@@ -206,8 +205,8 @@ model Fabric {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  order    Order     @relation(fields: [orderId], references: [id])
-  supplier Supplier? @relation(fields: [supplierId], references: [id])
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  supplier  Supplier? @relation(fields: [supplierId], references: [id])
 
   @@map("fabrics")
 }

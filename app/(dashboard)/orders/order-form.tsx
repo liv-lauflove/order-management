@@ -39,8 +39,9 @@ export function OrderForm({
   const [status, setStatus] = useState<string>(initialData?.status || 'WAITING_SUPPLIER')
   const [notes, setNotes] = useState(initialData?.notes || '')
   
-  const [items, setItems] = useState<{furnitureName: string, qty: number, notes: string}[]>(
+  const [items, setItems] = useState<{id?: string, furnitureName: string, qty: number, notes: string}[]>(
     initialData?.items?.map((item: any) => ({
+      id: item.id,
       furnitureName: item.furnitureName,
       qty: item.qty,
       notes: item.notes || ''

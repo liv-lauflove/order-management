@@ -12,7 +12,8 @@ import {
   FileText,
   DollarSign,
   Settings,
-  Sofa
+  Sofa,
+  Hammer
 } from "lucide-react"
 
 import {
@@ -30,7 +31,8 @@ const navItems = [
   { title: "Customers", url: "/customers", icon: Users },
   { title: "Orders", url: "/orders", icon: ShoppingCart },
   { title: "Suppliers", url: "/suppliers", icon: Truck },
-  { title: "Fabrics", url: "/fabrics", icon: Scissors },
+  { title: "Production", url: "/supplier-orders", icon: Hammer },
+  { title: "Fabric Management", url: "/fabrics", icon: Scissors },
   { title: "Invoices", url: "/invoices", icon: FileText },
   { title: "Finance", url: "/finance", icon: DollarSign },
 ]
