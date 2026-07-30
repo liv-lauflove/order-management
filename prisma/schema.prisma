@@ -80,6 +80,7 @@ model User {
   email         String   @unique
   passwordHash  String?  // null jika login via Google OAuth
   provider      String   @default("credentials") // "credentials" | "google"
+  role          String   @default("ADMIN") // "ADMIN" | "STAFF" dsb.
   avatarUrl     String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
